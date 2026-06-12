@@ -1,0 +1,17 @@
+{
+  "short_name": "Nuestra Cocina",
+  "name": "Nuestra Cocina Familiar 🏠",
+  "icons": [
+    {
+      "src": "96979.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "background_color": "#FFF9F3",
+  "theme_color": "#FF7B54",
+  "display": "standalone",
+  "orientation": "portrait"
+}
