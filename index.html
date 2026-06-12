@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>La Cocina Familiar 🏠</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cocina Familiar">
+    <link rel="apple-touch-icon" href="96979.png">
+    <link rel="manifest" href="manifest.json">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght=400;600;700&display=swap" rel="stylesheet">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyBIn7vxEr0DkfII-xlKimodCcqp9oO-ZJw",
+            authDomain: "cocina-familiar-d4f33.firebaseapp.com",
+            databaseURL: "https://cocina-familiar-d4f33-default-rtdb.firebaseio.com/",
+            projectId: "cocina-familiar-d4f33",
+            storageBucket: "cocina-familiar-d4f33.firebasestorage.app",
+            messagingSenderId: "811617355088",
+            appId: "1:811617355088:web:5f0bcd70ca555fbe491855"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        window.db = getDatabase(app);
+        window.dbRef = ref;
+        window.onValue = onValue;
+        window.set = set;
+    </script>
+
+    <style>
+        :root {
+            --bg-color: #FFF9F3;
+            --primary-color: #FF7B54;
+            --secondary-color: #FFB26B;
+            --accent-color: #98D8AA;
+            --text-dark: #4A3E3D;
+            --card-bg: #FFFFFF;
+            --purple-dark: #6C5B7B;
+            --red-pastel: #FF8787;
+            --blue-pastel: #A2D2FF;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 15px;
+            padding-bottom: 110px;
+            user-select: none;
+        }
+        header { display: flex; flex-direction: column; padding: 10px 0 12px 0; gap: 12px; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-family: 'Fredoka One', cursive; color: var(--primary-color); margin: 0; font-size: 24px; }
+        
+        .nav-tabs { display: flex; width: 100%; gap: 4px; background: #EFEBE9; padding: 4px; border-radius: 16px; margin-top: 5px; flex-wrap: wrap; }
+        .tab-btn {
+            flex: 1; border: none; padding: 10px 6px; border-radius: 12px;
+            font-weight: 700; font-size: 13px; cursor: pointer;
+            background: transparent; color: #7A6968; transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center; gap: 4px;
+            white-space: nowrap;
+        }
+        .tab-btn i { font-size: 14px; }
+        .tab-btn.active-cocina { background: white; color: var(--primary-color); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .tab-btn.active-pedidos { background: white; color: var(--purple-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .tab-btn.active-plan { background: white; color: #2E7D32; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .tab-btn.active-compra { background: white; color: #0288D1; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        
+        .panel-familia { background: var(--card-bg); padding: 18px; border-radius: 24px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
+        .titulo-seccion { font-weight: 700; font-size: 16px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; color: var(--text-dark); position: relative;}
+        .hint-borrar { font-size: 11px; color: #A0908F; font-weight: 400; }
+        
+        .grid-familia { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; text-align: center; }
+        .miembro-avatar-wrapper { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; cursor: pointer; }
+        .avatar-circulo {
+            width: 50px; height: 50px; border-radius: 50%;
+            background: #F5F0EB; display: flex; justify-content: center;
+            align-items: center; font-size: 20px; position: relative;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.04); transition: transform 0.2s;
+        }
+        .miembro-avatar-wrapper.activo .avatar-circulo { transform: scale(1.08); box-shadow: 0 0 0 3px var(--primary-color), 0 6px 12px rgba(0,0,0,0.1); }
+        .miembro-avatar-wrapper.activo-pedido .avatar-circulo { transform: scale(1.08); box-shadow: 0 0 0 3px var(--purple-dark), 0 6px 12px rgba(0,0,0,0.1); }
+        .miembro-avatar-wrapper.desactivado-filtro .avatar-circulo { opacity: 0.3; filter: grayscale(100%); box-shadow: none !important; }
+        
+        .votos-badge { position: absolute; top: -4px; right: -4px; background: var(--red-pastel); color: white; font-size: 10px; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .miembro-avatar-wrapper.activo-pedido .votos-badge { background: var(--purple-dark); }
+        
+        .barra-busqueda-container { margin-bottom: 20px; }
+        .input-busqueda { width: 100%; border: none; padding: 14px 18px; border-radius: 18px; font-family: inherit; font-size: 15px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.04); outline: none; }
+        
+        .tarjeta-plato {
+            background: var(--card-bg); padding: 16px; border-radius: 22px;
+            margin-bottom: 12px; display: flex; justify-content: space-between;
+            align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            border-left: 6px solid var(--secondary-color); border: 1px solid rgba(0,0,0,0.01);
+            position: relative; overflow: hidden; transition: transform 0.2s;
+        }
+        .tarjeta-plato.pedido-estilo { border-left: 6px solid var(--purple-dark); }
+        .tarjeta-plato.compra-estilo { border-left: 6px solid #0288D1; cursor: pointer; }
+        .tarjeta-plato.marcado-borrar { background: #E3F2FD; border-left-color: #0288D1; }
+        
+        .info-plato { display: flex; flex-direction: column; gap: 4px; flex: 1; margin-right: 10px; }
+        .nombre-plato { font-weight: 700; font-size: 16px; color: var(--text-dark); }
+        .meta-plato { display: flex; gap: 8px; font-size: 11px; font-weight: 600; color: #A0908F; flex-wrap: wrap; }
+        
+        .check-compra-container { display: flex; align-items: center; justify-content: center; font-size: 20px; color: #B0BEC5; padding-left: 5px; }
+        .marcado-borrar .check-compra-container { color: #0288D1; }
+
+        .range-container { display: flex; flex-direction: column; gap: 4px; margin-top: 5px; }
+        .range-label { font-size: 13px; font-weight: bold; color: var(--text-dark); display: flex; justify-content: space-between; }
+
+        .btn-flotante {
+            position: fixed; bottom: 25px; right: 25px;
+            background: var(--primary-color); color: white; border: none;
+            border-radius: 50%; width: 58px; height: 58px;
+            font-size: 20px; cursor: pointer; z-index: 100;
+            box-shadow: 0 6px 16px rgba(255,123,84,0.4); display: flex;
+            justify-content: center; align-items: center; transition: all 0.2s;
+        }
+        #btnFlotantePedido { background: var(--purple-dark); box-shadow: 0 6px 16px rgba(108,91,123,0.4); display: none; }
+        #btnFlotanteCompra { background: #0288D1; box-shadow: 0 6px 16px rgba(2,136,209,0.4); display: none; }
+        #btnFlotanteBorrarMasivo { background: var(--red-pastel); box-shadow: 0 6px 16px rgba(255,135,135,0.4); display: none; right: 95px; }
+        
+        .contenedor-filtros-super { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; }
+        .btn-filtro-super { border: none; padding: 8px 14px; border-radius: 12px; background: white; font-family: inherit; font-size: 12px; font-weight: 700; color: #7A6968; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        .btn-filtro-super.activo { background: #0288D1; color: white; }
+        
+        .pantalla-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74,62,61,0.4); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 200; padding: 20px; }
+        .modal-contenido { background: white; padding: 22px; border-radius: 28px; width: 100%; max-width: 360px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 14px; max-height: 90vh; overflow-y: auto; position: relative;}
+        .modal-contenido h2 { font-family: 'Fredoka One', cursive; margin: 0; font-size: 20px; color: var(--primary-color); text-align: center; padding-right: 20px; }
+        .modal-contenido label { font-size: 12px; font-weight: 700; color: #7A6968; margin-bottom: -6px; }
+        .input-bonito, .select-bonito, .area-bonita { width: 100%; border: none; background: #F5F0EB; padding: 12px 16px; border-radius: 14px; font-family: inherit; font-size: 14px; color: var(--text-dark); outline: none; }
+        .area-bonita { min-height: 80px; resize: none; }
+        
+        .btn-cerrar-esquina { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 20px; color: #A0908F; cursor: pointer; padding: 5px; transition: color 0.2s;}
+
+        .btn-accion { width: 100%; border: none; padding: 12px; border-radius: 14px; font-family: inherit; font-weight: 700; font-size: 14px; cursor: pointer; transition: background 0.2s; }
+        .btn-guardar-plato { background: var(--primary-color); color: white; }
+        .btn-editar { background: #FFF3E0; color: #E65100; font-weight: 700; margin-top: 5px;}
+        .btn-eliminar { background: #FFEBEE; color: #C62828; font-weight: 700; margin-top: 5px;}
+        
+        .selector-gustos-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 4px; }
+        .btn-gusto-toggle { display: flex; flex-direction: column; align-items: center; padding: 6px; background: #F5F0EB; border-radius: 10px; border: 2px solid transparent; cursor: pointer; font-size: 10px; font-weight: 700; }
+        .btn-gusto-toggle.le-gusta { border-color: var(--accent-color); background: #E8F5E9; }
+        .btn-gusto-toggle.no-le-gusta { border-color: var(--red-pastel); background: #FFEBEE; }
+        .btn-gusto-toggle .mini-avatar { font-size: 16px; }
+
+        /* Pantalla Selección de Perfil Inicial */
+        #pantallaLoginInicial { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; background-color: var(--bg-color); padding: 20px; position: fixed; top:0; left:0; width:100%; height:100%; z-index: 1000; }
+        .login-box { background: white; padding: 30px 20px; border-radius: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; width: 100%; max-width: 360px; }
+        .grid-login-inicial { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 25px; }
+        .login-perfil-card { background: #F5F0EB; padding: 16px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+        .login-perfil-card:hover { transform: scale(1.03); background: #EDE7E3; }
+        .login-perfil-card .avatar-grande { width: 65px; height: 65px; border-radius: 50%; background: white; display: flex; justify-content: center; align-items: center; font-size: 28px; box-shadow: 0 4px 10px rgba(0,0,0,0.04); }
+
+        /* Historial y Sugerencias */
+        .bloque-historial { background: #F5F0EB; padding: 12px; border-radius: 18px; margin-bottom: 15px; }
+        .item-sugerido { display: inline-block; background: white; padding: 6px 12px; border-radius: 12px; margin: 4px; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); }
+
+        /* Plan Semanal */
+        .plan-dia-card { background: white; padding: 14px; border-radius: 20px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.01); border: 1px solid rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center; }
+        .plan-dia-nombre { font-weight: 700; font-size: 15px; color: var(--text-dark); width: 90px; text-transform: capitalize; }
+        .plan-dia-contenido { flex: 1; font-size: 13px; color: #7A6968; background: #FFF9F3; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-weight: 600; min-height: 36px; display: flex; align-items: center; }
+        .tag-tipo-plan { font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 6px; margin-right: 6px; color: white; }
+        .tag-tipo-plan.cocina { background: var(--primary-color); }
+        .tag-tipo-plan.pedido { background: var(--purple-dark); }
+        .tag-tipo-plan.fuera { background: #78909C; }
+        .tag-tipo-plan.vacio { background: #B0BEC5; }
+    </style>
+</head>
+<body>
+
+    <div id="pantallaLoginInicial">
+        <div class="login-box">
+            <img src="96979.png" style="width: 130px; height: 130px; object-fit: cover; border-radius: 24px; margin-bottom: 15px; box-shadow: 0 6px 14px rgba(0,0,0,0.08);">
+            <h2 style="margin:0 0 10px 0;">¿Quién eres? 🤔</h2>
+            <p style="font-size: 13px; color: #A0908F; font-weight: 600; margin: 0;">Selecciona tu perfil para entrar</p>
+            <div class="grid-login-inicial" id="loginInicialGrid"></div>
+        </div>
+    </div>
+
+    <div id="contenidoApp" style="display: none;">
+        <header>
+            <div class="header-top">
+                <h1 id="txtTituloBienvenida">La Cocina Familiar 🏠</h1>
+                <button onclick="cerrarSesionVolver()" style="background: #EFEBE9; border:none; padding: 8px 12px; border-radius: 12px; font-weight:700; font-size:11px; color:#7A6968; cursor:pointer;"><i class="fas fa-sign-out-alt"></i> Cambiar</button>
+            </div>
+
+            <div class="nav-tabs">
+                <button class="tab-btn active-cocina" id="tabCocina" onclick="irASeccion('cocina')"><i class="fas fa-utensils"></i> Cocina</button>
+                <button class="tab-btn" id="tabPedidos" onclick="irASeccion('pedidos')"><i class="fas fa-motorcycle"></i> Pedidos</button>
+                <button class="tab-btn" id="tabPlan" onclick="irASeccion('plan')"><i class="fas fa-calendar-alt"></i> Plan Semanal</button>
+                <button class="tab-btn" id="tabCompra" onclick="irASeccion('compra')"><i class="fas fa-shopping-basket"></i> Compra</button>
+            </div>
+        </header>
+
+        <div id="ventanaCocina">
+            <div class="panel-familia">
+                <div class="titulo-seccion"><i class="fas fa-users" style="color: var(--primary-color);"></i> ¿Quiénes comen hoy? <span class="hint-borrar">(Desactiva al que NO esté en casa)</span></div>
+                <div class="grid-familia" id="gridFamiliaCocina"></div>
+            </div>
+            
+            <div class="bloque-historial" id="bloqueSugerenciasCocina">
+                <div style="font-size:11px; font-weight:700; color:#7A6968; margin-bottom:6px;"><i class="fas fa-magic"></i> Sugerencias / Últimas comidas:</div>
+                <div id="contenedorSugerenciasCocina"></div>
+            </div>
+
+            <div class="barra-busqueda-container">
+                <input type="text" id="inputBusquedaCocina" class="input-busqueda" placeholder="🔍 Busca platos o ingredientes..." oninput="actualizarInterfazCompleta()">
+            </div>
+            <div class="titulo-seccion"><i class="fas fa-utensils" style="color: var(--secondary-color);"></i> Platos ideales: <span class="hint-borrar">(Mantén pulsado para gestionar)</span></div>
+            <div class="lista-menu" id="menuResultados"></div>
+        </div>
+
+        <div id="ventanaPedidos" style="display: none;">
+            <div class="panel-familia">
+                <div class="titulo-seccion"><i class="fas fa-users" style="color: var(--purple-dark);"></i> ¿Quiénes piden hoy? <span class="hint-borrar">(Desactiva al que NO esté en casa)</span></div>
+                <div class="grid-familia" id="gridFamiliaPedidos"></div>
+            </div>
+
+            <div class="bloque-historial" id="bloqueSugerenciasPedidos">
+                <div style="font-size:11px; font-weight:700; color:#7A6968; margin-bottom:6px;"><i class="fas fa-history"></i> Últimos sitios pedidos:</div>
+                <div id="contenedorSugerenciasPedidos"></div>
+            </div>
+            <div class="titulo-seccion"><i class="fas fa-store" style="color: var(--purple-dark);"></i> Sitios de comida registrados: <span class="hint-borrar">(Mantén pulsado para gestionar)</span></div>
+            <div class="lista-menu" id="listaPedidosResultados"></div>
+        </div>
+
+        <div id="ventanaPlan" style="display: none;">
+            <div class="titulo-seccion"><i class="fas fa-calendar-week" style="color: #2E7D32;"></i> Menú de la semana: <span class="hint-borrar">(Toca un día para planificarlo)</span></div>
+            <div id="contenedorPlanSemanal"></div>
+        </div>
+
+        <div id="ventanaCompra" style="display: none;">
+            <div class="contenedor-filtros-super">
+                <button class="btn-filtro-super activo" id="f-todos" onclick="filtrarSupercompra('todos')">🛒 Todos</button>
+                <button class="btn-filtro-super" id="f-mercadona" onclick="filtrarSupercompra('mercadona')">Mercadona 🟢</button>
+                <button class="btn-filtro-super" id="f-carrefour" onclick="filtrarSupercompra('carrefour')">Carrefour 🔵</button>
+                <button class="btn-filtro-super" id="f-dia" onclick="filtrarSupercompra('dia')">Dia 🔴</button>
+                <button class="btn-filtro-super" id="f-ahorramas" onclick="filtrarSupercompra('ahorramas')">Ahorramas 🟠</button>
+                <button class="btn-filtro-super" id="f-general" onclick="filtrarSupercompra('general')">Cualquiera ⚪</button>
+            </div>
+            <div class="titulo-seccion"><i class="fas fa-shopping-cart" style="color: #0288D1;"></i> Lista de la compra: <span class="hint-borrar">(Toca para tachar)</span></div>
+            <div class="lista-menu" id="listaCompraResultados"></div>
+        </div>
+    </div>
+    <div class="pantalla-modal" id="modalAgregarPlato">
+        <div class="modal-contenido">
+            <button class="btn-cerrar-esquina" onclick="ocultarModal()">❌</button>
+            <h2 id="modalPlatoTituloAccion">Añadir a Cocina</h2>
+            
+            <label>Nombre del plato:</label>
+            <input type="text" id="addPlatoNombre" class="input-bonito" placeholder="Ej: Macarrones...">
+            
+            <label>Ingredientes:</label>
+            <input type="text" id="addPlatoIngredientes" class="input-bonito" placeholder="Ingredientes separados por comas...">
+            
+            <label>Receta / Instrucciones:</label>
+            <textarea id="addPlatoDetalles" class="area-bonita" placeholder="Paso a paso de la preparación..."></textarea>
+            
+            <div class="range-container">
+                <div class="range-label">
+                    <span>Tiempo estimado:</span>
+                    <span id="rangeTiempoValor">30 min</span>
+                </div>
+                <input type="range" id="addPlatoTiempo" min="5" max="120" step="5" value="30" oninput="document.getElementById('rangeTiempoValor').innerText = this.value + ' min'">
+            </div>
+
+            <label>¿A quién le GUSTA / NO le gusta?</label>
+            <div class="selector-gustos-grid" id="gustosPlatoContenedor"></div>
+            
+            <button class="btn-accion btn-guardar-plato" style="margin-top:10px;" onclick="ejecutarAgregarPlato()">Guardar Plato</button>
+        </div>
+    </div>
+
+    <div class="pantalla-modal" id="modalAgregarPedido">
+        <div class="modal-contenido">
+            <button class="btn-cerrar-esquina" onclick="ocultarModalPedido()">❌</button>
+            <h2 style="color: var(--purple-dark);" id="modalPedidoTituloAccion">Añadir Sitio</h2>
+            
+            <label>Nombre del Restaurante:</label>
+            <input type="text" id="addPedidoNombre" class="input-bonito" placeholder="Ej: Telepizza...">
+            
+            <label>Tipo de comida / Notas:</label>
+            <input type="text" id="addPedidoTipo" class="input-bonito" placeholder="Ej: Pizza, Hamburguesas...">
+
+            <button class="btn-accion btn-guardar-plato" style="background: var(--purple-dark); margin-top:10px;" onclick="ejecutarAgregarPedido()">Guardar Sitio</button>
+        </div>
+    </div>
+
+    <div class="pantalla-modal" id="modalAsignarPlan">
+        <div class="modal-contenido">
+            <button class="btn-cerrar-esquina" onclick="ocultarModalPlan()">❌</button>
+            <h2 style="color: #2E7D32;" id="tituloModalPlan">Planificar Día</h2>
+            
+            <label>Selecciona qué comer / pedir:</label>
+            <select id="selectTipoElementoPlan" class="select-bonito" onchange="alternarSelectoresContenidoPlan()">
+                <option value="vacio">Ninguno / Borrar día ❌</option>
+                <option value="cocina">Cocinar un Plato 🍳</option>
+                <option value="pedido">Pedir de un Restaurante 🛵</option>
+                <option value="fuera">Comer fuera 🍕🍔</option>
+            </select>
+
+            <div id="wrapperSelectContenidoPlan" style="display:none; width:100%;">
+                <label>¿Qué elemento vas a asignar?</label>
+                <select id="selectContenidoItemPlan" class="select-bonito"></select>
+            </div>
+
+            <button class="btn-accion btn-guardar-plato" style="background: #2E7D32;" onclick="ejecutarAsignarPlan()">Confirmar Planificación</button>
+        </div>
+    </div>
+
+    <div class="pantalla-modal" id="modalGestionar">
+        <div class="modal-contenido">
+            <button class="btn-cerrar-esquina" onclick="ocultarModalGestionar()">❌</button>
+            <h2 id="tituloGestionar" style="color: var(--text-dark);">¿Qué deseas hacer?</h2>
+            <button class="btn-accion btn-editar" onclick="ejecutarOpcionEdicion()"><i class="fas fa-edit"></i> Editar Elemento</button>
+            <button class="btn-accion btn-eliminar" onclick="ejecutarOpcionEliminacion()"><i class="fas fa-trash-alt"></i> Eliminar Registro</button>
+        </div>
+    </div>
+
+    <div class="pantalla-modal" id="modalAgregarCompra">
+        <div class="modal-contenido">
+            <button class="btn-cerrar-esquina" onclick="ocultarModalCompra()">❌</button>
+            <h2 style="color: #0288D1;">Añadir Artículo</h2>
+            <input type="text" id="addCompraNombre" class="input-bonito" placeholder="¿Qué hace falta comprar?">
+            <select id="addCompraSuper" class="select-bonito">
+                <option value="general">Cualquier supermercado ⚪</option>
+                <option value="mercadona">Mercadona 🟢</option>
+                <option value="carrefour">Carrefour 🔵</option>
+                <option value="dia">Dia 🔴</option>
+                <option value="ahorramas">Ahorramas 🟠</option>
+            </select>
+            <button class="btn-accion btn-guardar-plato" style="background: #0288D1;" onclick="ejecutarAgregarCompra()">Añadir a la lista</button>
+        </div>
+    </div>
+
+    <button class="btn-flotante" id="btnFlotanteAdd" onclick="mostrarModal()"><i class="fas fa-plus"></i></button>
+    <button class="btn-flotante" id="btnFlotantePedido" onclick="mostrarModalPedido()"><i class="fas fa-plus"></i></button>
+    <button class="btn-flotante" id="btnFlotanteCompra" onclick="mostrarModalCompra()"><i class="fas fa-plus"></i></button>
+    <button class="btn-flotante" id="btnFlotanteBorrarMasivo" onclick="ejecutarBorradoMasivoCompra()"><i class="fas fa-trash"></i></button>
+    <script>
+        window.baseDatosComidas = [];
+        window.baseDatosPedidos = [];
+        window.baseDatosCompra = [];
+        window.baseDatosPlanSemanal = {}; 
+        window.historialComidasRecientes = [];
+        window.historialPedidosRecientes = [];
+
+        const INTEGRANTES = [
+            { id: 'mama', nombre: 'Mamá', emoji: '👩' },
+            { id: 'papa', nombre: 'Papá', emoji: '👨' },
+            { id: 'hijo1', nombre: 'África', emoji: '👧' },
+            { id: 'hijo2', nombre: 'Marco', emoji: '👦' },
+            { id: 'hijo3', nombre: 'Paula', emoji: '👧' }
+        ];
+
+        const DIAS_SEMANA = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+
+        let perfilLogueadoActual = null;
+        let seccionActivaActual = 'cocina';
+        let filtroSuperSeleccionado = 'todos';
+        let perfilesDesactivadosFiltroComida = [];
+        
+        let elementoSeleccionadoParaGestionar = null; 
+        let indiceSeleccionadoParaGestionar = null;
+        let listaElementosMarcadosParaBorrar = [];
+        let temporizadorPulsacionLarga = null;
+        let diaSeleccionadoParaPlan = null;
+        let mapaGustosModalEdicion = {};
+
+        function enviarEstadoAFirebase() {
+            if (window.set && window.dbRef && window.db) {
+                window.set(window.dbRef(window.db, 'datos_v2'), {
+                    comidas: window.baseDatosComidas,
+                    pedidos: window.baseDatosPedidos,
+                    compra: window.baseDatosCompra,
+                    planSemanal: window.baseDatosPlanSemanal,
+                    historialComidas: window.historialComidasRecientes || [],
+                    historialPedidos: window.historialPedidosRecientes || []
+                }).catch(err => console.error("Error enviando datos:", err));
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            comprobarLoginExistente();
+
+            if (window.onValue && window.dbRef && window.db) {
+                window.onValue(window.dbRef(window.db, 'datos_v2'), (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        window.baseDatosComidas = data.comidas || [];
+                        window.baseDatosPedidos = data.pedidos || [];
+                        window.baseDatosCompra = data.compra || [];
+                        window.baseDatosPlanSemanal = data.planSemanal || {};
+                        window.historialComidasRecientes = data.historialComidas || [];
+                        window.historialPedidosRecientes = data.historialPedidos || [];
+                        actualizarInterfazCompleta();
+                    } else {
+                        window.baseDatosComidas = [
+                            { nombre: 'Macarrones con Tomate', tiempo: 20, ingredientes: 'pasta, tomate', detalles: 'Hervir y servir.', gustos: { mama: 1, papa: 1, hijo1: -1 } }
+                        ];
+                        window.baseDatosPedidos = [
+                            { nombre: 'Telepizza', tipo: 'Pizza', votos: ['mama'] }
+                        ];
+                        window.baseDatosCompra = [];
+                        window.baseDatosPlanSemanal = {};
+                        window.historialComidasRecientes = [];
+                        window.historialPedidosRecientes = [];
+                        enviarEstadoAFirebase();
+                    }
+                });
+            }
+        });
+
+        function comprobarLoginExistente() {
+            const guardado = localStorage.getItem('perfil_logueado_familiar');
+            if(guardado) {
+                loguearUsuarioFinal(guardado);
+            } else {
+                mostrarPantallaLoginInicial();
+            }
+        }
+
+        function mostrarPantallaLoginInicial() {
+            document.getElementById('pantallaLoginInicial').style.display = 'flex';
+            document.getElementById('contenidoApp').style.display = 'none';
+            const contenedor = document.getElementById('loginInicialGrid');
+            contenedor.innerHTML = '';
+            INTEGRANTES.forEach(p => {
+                contenedor.innerHTML += `
+                    <div class="login-perfil-card" onclick="loguearUsuarioFinal('${p.id}')">
+                        <div class="avatar-grande">${p.emoji}</div>
+                        <span style="font-weight:700; font-size:14px; color:var(--text-dark);">${p.nombre}</span>
+                    </div>
+                `;
+            });
+        }
+
+        function loguearUsuarioFinal(idPerfil) {
+            perfilLogueadoActual = idPerfil;
+            localStorage.setItem('perfil_logueado_familiar', idPerfil);
+            document.getElementById('pantallaLoginInicial').style.display = 'none';
+            document.getElementById('contenidoApp').style.display = 'block';
+            
+            const pObj = INTEGRANTES.find(x => x.id === idPerfil);
+            document.getElementById('txtTituloBienvenida').innerText = `¡Hola, ${pObj ? pObj.nombre : ''}! 🏠`;
+            
+            irASeccion(seccionActivaActual);
+        }
+
+        function cerrarSesionVolver() {
+            localStorage.removeItem('perfil_logueado_familiar');
+            mostrarPantallaLoginInicial();
+        }
+
+        function irASeccion(seccion) {
+            seccionActivaActual = seccion;
+            document.getElementById('ventanaCocina').style.display = seccion === 'cocina' ? 'block' : 'none';
+            document.getElementById('ventanaPedidos').style.display = seccion === 'pedidos' ? 'block' : 'none';
+            document.getElementById('ventanaPlan').style.display = seccion === 'plan' ? 'block' : 'none';
+            document.getElementById('ventanaCompra').style.display = seccion === 'compra' ? 'block' : 'none';
+
+            document.getElementById('btnFlotanteAdd').style.display = seccion === 'cocina' ? 'flex' : 'none';
+            document.getElementById('btnFlotantePedido').style.display = seccion === 'pedidos' ? 'flex' : 'none';
+            document.getElementById('btnFlotanteCompra').style.display = seccion === 'compra' ? 'flex' : 'none';
+            
+            if(seccion !== 'compra') document.getElementById('btnFlotanteBorrarMasivo').style.display = 'none';
+            else comprobarVisibilidadBotonesCompra();
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active-cocina', 'active-pedidos', 'active-plan', 'active-compra');
+            });
+            const tabActiva = document.getElementById('tab' + seccion.charAt(0).toUpperCase() + seccion.slice(1));
+            if(tabActiva) tabActiva.classList.add('active-' + seccion);
+
+            actualizarInterfazCompleta();
+        }
+
+        function comprobarVisibilidadBotonesCompra() {
+            if (seccionActivaActual === 'compra') {
+                if (listaElementosMarcadosParaBorrar.length > 0) {
+                    document.getElementById('btnFlotanteCompra').style.display = 'none';
+                    document.getElementById('btnFlotanteBorrarMasivo').style.display = 'flex';
+                } else {
+                    document.getElementById('btnFlotanteCompra').style.display = 'flex';
+                    document.getElementById('btnFlotanteBorrarMasivo').style.display = 'none';
+                }
+            }
+        }
+
+        function actualizarInterfazCompleta() {
+            if(seccionActivaActual === 'cocina') renderizarCocina();
+            if(seccionActivaActual === 'pedidos') renderizarPedidos();
+            if(seccionActivaActual === 'plan') renderizarPlanSemanal();
+            if(seccionActivaActual === 'compra') renderizarCompra();
+        }
+
+        function generarHTMLMiniAvataresGusto(mapaGustos) {
+            let html = '<div style="display:flex; gap:4px; margin-top:6px; flex-wrap:wrap;">';
+            INTEGRANTES.forEach(p => {
+                const gusto = mapaGustos ? mapaGustos[p.id] : 0;
+                if(gusto === 1) {
+                    html += `<span style="font-size:14px;" title="Le gusta a ${p.nombre}">${p.emoji}😊</span>`;
+                } else if(gusto === -1) {
+                    html += `<span style="font-size:14px; filter: grayscale(80%); opacity: 0.4;" title="NO le gusta a ${p.nombre}">${p.emoji}🤢</span>`;
+                }
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function alternarFiltroDesgustoMiembro(idMiembro) {
+            let pos = perfilesDesactivadosFiltroComida.indexOf(idMiembro);
+            if (pos > -1) perfilesDesactivadosFiltroComida.splice(pos, 1);
+            else perfilesDesactivadosFiltroComida.push(idMiembro);
+            actualizarInterfazCompleta();
+        }
+
+        function registrarEnHistorial(tipo, nombre, indexOriginal) {
+            if(tipo === 'cocina') {
+                window.historialComidasRecientes = window.historialComidasRecientes.filter(x => x.nombre !== nombre);
+                window.historialComidasRecientes.unshift({ nombre, index: indexOriginal });
+                if(window.historialComidasRecientes.length > 5) window.historialComidasRecientes.pop();
+            } else {
+                window.historialPedidosRecientes = window.historialPedidosRecientes.filter(x => x.nombre !== nombre);
+                window.historialPedidosRecientes.unshift({ nombre, index: indexOriginal });
+                if(window.historialPedidosRecientes.length > 5) window.historialPedidosRecientes.pop();
+            }
+            enviarEstadoAFirebase();
+        }
+
+        function renderizarBloquesHistorial() {
+            const contenedorC = document.getElementById('contenedorSugerenciasCocina');
+            if(contenedorC) {
+                contenedorC.innerHTML = '';
+                if(window.historialComidasRecientes && window.historialComidasRecientes.length > 0) {
+                    window.historialComidasRecientes.forEach(item => {
+                        contenedorC.innerHTML += `<span class="item-sugerido" onclick="cargarSugerido('cocina', '${item.nombre}')">🕒 ${item.nombre}</span>`;
+                    });
+                } else {
+                    contenedorC.innerHTML = '<span style="font-size:11px; color:#A0908F;">No hay comidas recientes.</span>';
+                }
+            }
+            const contenedorP = document.getElementById('contenedorSugerenciasPedidos');
+            if(contenedorP) {
+                contenedorP.innerHTML = '';
+                if(window.historialPedidosRecientes && window.historialPedidosRecientes.length > 0) {
+                    window.historialPedidosRecientes.forEach(item => {
+                        contenedorP.innerHTML += `<span class="item-sugerido" onclick="cargarSugerido('pedido', '${item.nombre}')">🛵 ${item.nombre}</span>`;
+                    });
+                } else {
+                    contenedorP.innerHTML = '<span style="font-size:11px; color:#A0908F;">No hay pedidos recientes.</span>';
+                }
+            }
+        }
+
+        function cargarSugerido(tipo, nombre) {
+            if(tipo === 'cocina') {
+                document.getElementById('inputBusquedaCocina').value = nombre;
+                renderizarCocina();
+            }
+        }
+
+        function renderizarCocina() {
+            renderizarBloquesHistorial();
+            const gridFamilia = document.getElementById('gridFamiliaCocina');
+            if(gridFamilia) {
+                gridFamilia.innerHTML = '';
+                INTEGRANTES.forEach(p => {
+                    const estaExcluido = perfilesDesactivadosFiltroComida.includes(p.id);
+                    gridFamilia.innerHTML += `
+                        <div class="miembro-avatar-wrapper ${estaExcluido ? 'desactivado-filtro' : 'activo'}" onclick="alternarFiltroDesgustoMiembro('${p.id}')">
+                            <div class="avatar-circulo">${p.emoji}</div>
+                            <div class="nombre-miembro" style="font-weight:700;">${p.nombre}</div>
+                            <span style="font-size:9px; font-weight:bold; color:red;">${estaExcluido ? 'Fuera 🚫' : 'Comiendo'}</span>
+                        </div>
+                    `;
+                });
+            }
+
+            const contenedorResultados = document.getElementById('menuResultados');
+            if(!contenedorResultados) return;
+            contenedorResultados.innerHTML = '';
+            
+            const queryBusqueda = document.getElementById('inputBusquedaCocina').value.toLowerCase();
+
+            let comidasFiltradas = window.baseDatosComidas.filter(c => {
+                const matchBusqueda = c.nombre.toLowerCase().includes(queryBusqueda) || 
+                                      c.ingredientes.toLowerCase().includes(queryBusqueda) || 
+                                      (c.detalles && c.detalles.toLowerCase().includes(queryBusqueda));
+                
+                if (!matchBusqueda) return false;
+
+                for (let integrante of INTEGRANTES) {
+                    const idM = integrante.id;
+                    const estaDesactivado = perfilesDesactivadosFiltroComida.includes(idM);
+                    if (!estaDesactivado && c.gustos && c.gustos[idM] === -1) {
+                        return false; 
+                    }
+                }
+                return true;
+            });
+
+            if(comidasFiltradas.length === 0) {
+                contenedorResultados.innerHTML = '<p style="font-size:13px; color:#A0908F; text-align:center;">Ningún plato coincide.</p>';
+                return;
+            }
+
+            comidasFiltradas.forEach(comida => {
+                const indexOriginal = window.baseDatosComidas.indexOf(comida);
+                const card = document.createElement('div');
+                card.className = 'tarjeta-plato';
+                
+                card.addEventListener('touchstart', (e) => iniciarTemporizadorGestion(comida, indexOriginal, 'cocina', e));
+                card.addEventListener('touchend', cancelarTemporizadorGestion);
+                card.addEventListener('mousedown', (e) => iniciarTemporizadorGestion(comida, indexOriginal, 'cocina', e));
+                card.addEventListener('mouseup', cancelarTemporizadorGestion);
+
+                card.innerHTML = `
+                    <div class="info-plato">
+                        <span class="nombre-plato">${comida.nombre}</span>
+                        <div class="meta-plato">
+                            <span><i class="far fa-clock"></i> ${comida.tiempo || 30} min</span>
+                            <span><i class="fas fa-carrot"></i> ${comida.ingredientes}</span>
+                        </div>
+                        ${generarHTMLMiniAvataresGusto(comida.gustos)}
+                    </div>
+                    <button onclick="event.stopPropagation(); registrarComidaHistorialManual(${indexOriginal})" style="background:var(--accent-color); border:none; padding:8px 12px; border-radius:12px; font-weight:700; font-size:12px; color:white; cursor:pointer;"><i class="fas fa-check"></i> Hecho</button>
+                `;
+                contenedorResultados.appendChild(card);
+            });
+        }
+
+        function registrarComidaHistorialManual(idx) {
+            const comida = window.baseDatosComidas[idx];
+            registrarEnHistorial('cocina', comida.nombre, idx);
+            alert(`¡Comida "${comida.nombre}" guardada en el historial reciente!`);
+            renderizarCocina();
+        }
+
+        function renderizarPedidos() {
+            renderizarBloquesHistorial();
+            const gridFamilia = document.getElementById('gridFamiliaPedidos');
+            if(gridFamilia) {
+                gridFamilia.innerHTML = '';
+                INTEGRANTES.forEach(p => {
+                    gridFamilia.innerHTML += `
+                        <div class="miembro-avatar-wrapper activo-pedido">
+                            <div class="avatar-circulo">${p.emoji}</div>
+                            <div class="nombre-miembro" style="font-weight:700;">${p.nombre}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            const contenedorResultados = document.getElementById('listaPedidosResultados');
+            if(!contenedorResultados) return;
+            contenedorResultados.innerHTML = '';
+            
+            if(window.baseDatosPedidos.length === 0) {
+                contenedorResultados.innerHTML = '<p style="font-size:13px; color:#A0908F; text-align:center;">No hay restaurantes guardados.</p>';
+                return;
+            }
+
+            window.baseDatosPedidos.forEach(pedido => {
+                const indexOriginal = window.baseDatosPedidos.indexOf(pedido);
+                const listaVotos = pedido.votos || [];
+                const haVotado = listaVotos.includes(perfilLogueadoActual);
+                
+                const card = document.createElement('div');
+                card.className = 'tarjeta-plato pedido-estilo';
+                
+                card.addEventListener('touchstart', (e) => iniciarTemporizadorGestion(pedido, indexOriginal, 'pedidos', e));
+                card.addEventListener('touchend', cancelarTemporizadorGestion);
+                card.addEventListener('mousedown', (e) => iniciarTemporizadorGestion(pedido, indexOriginal, 'pedidos', e));
+                card.addEventListener('mouseup', cancelarTemporizadorGestion);
+
+                let htmlAvataresVoto = '<div style="display:flex; gap:4px; margin-top:6px; flex-wrap:wrap;">';
+                listaVotos.forEach(idVotante => {
+                    const intg = INTEGRANTES.find(x => x.id === idVotante);
+                    if(intg) htmlAvataresVoto += `<span style="font-size:14px;">${intg.emoji}👍</span>`;
+                });
+                htmlAvataresVoto += '</div>';
+
+                card.innerHTML = `
+                    <div class="info-plato">
+                        <span class="nombre-plato">${pedido.nombre}</span>
+                        <div class="meta-plato">
+                            <span><i class="fas fa-pizza-slice"></i> ${pedido.tipo || 'Varios'}</span>
+                        </div>
+                        ${htmlAvataresVoto}
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <button onclick="event.stopPropagation(); alternarVotoPedido(${indexOriginal})" style="background:${haVotado ? var(--red-pastel) : '#EFEBE9'}; border:none; padding:8px 12px; border-radius:12px; font-weight:700; font-size:12px; color:${haVotado ? 'white' : '#7A6968'}; cursor:pointer;"><i class="fas fa-thumbs-up"></i> ${haVotado ? 'Quitar' : 'Votar'}</button>
+                        <button onclick="event.stopPropagation(); registrarPedidoHistorialManual(${indexOriginal})" style="background:var(--purple-dark); border:none; padding:8px 12px; border-radius:12px; font-weight:700; font-size:12px; color:white; cursor:pointer;"><i class="fas fa-motorcycle"></i> Pedido</button>
+                    </div>
+                `;
+                contenedorResultados.appendChild(card);
+            });
+        }
+
+        function alternarVotoPedido(idx) {
+            let pedido = window.baseDatosPedidos[idx];
+            if(!pedido.votos) pedido.votos = [];
+            
+            let pos = pedido.votos.indexOf(perfilLogueadoActual);
+            if(pos > -1) pedido.votos.splice(pos, 1);
+            else pedido.votos.push(perfilLogueadoActual);
+            
+            enviarEstadoAFirebase();
+            renderizarPedidos();
+        }
+
+        function registrarPedidoHistorialManual(idx) {
+            const ped = window.baseDatosPedidos[idx];
+            registrarEnHistorial('pedido', ped.nombre, idx);
+            alert(`¡Sitio "${ped.nombre}" marcado en tu historial reciente de pedidos!`);
+            renderizarPedidos();
+        }
+
+        function renderizarPlanSemanal() {
+            const contenedor = document.getElementById('contenedorPlanSemanal');
+            if(!contenedor) return;
+            contenedor.innerHTML = '';
+
+            DIAS_SEMANA.forEach(dia => {
+                const asignado = window.baseDatosPlanSemanal[dia] || { tipo: 'vacio', nombre: 'Sin planificar 🍽️' };
+                let tagClase = asignado.tipo;
+                
+                let tagTexto = 'Libre';
+                if(tagClase === 'cocina') tagTexto = 'cocina';
+                if(tagClase === 'pedido') tagTexto = 'pedido';
+                if(tagClase === 'fuera') tagTexto = 'Fuera 🍔';
+
+                contenedor.innerHTML += `
+                    <div class="plan-dia-card">
+                        <div class="plan-dia-nombre">${dia}</div>
+                        <div class="plan-dia-contenido" onclick="abrirModalPlanificarDia('${dia}')">
+                            <span class="tag-tipo-plan ${tagClase}">${tagTexto}</span>
+                            <span>${asignado.nombre}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function abrirModalPlanificarDia(dia) {
+            diaSeleccionadoParaPlan = dia;
+            document.getElementById('tituloModalPlan').innerText = `Planificar: ${dia.toUpperCase()}`;
+            
+            const actual = window.baseDatosPlanSemanal[dia] || { tipo: 'vacio' };
+            document.getElementById('selectTipoElementoPlan').value = actual.tipo;
+            
+            alternarSelectoresContenidoPlan();
+            document.getElementById('modalAsignarPlan').style.display = 'flex';
+        }
+
+        function alternarSelectoresContenidoPlan() {
+            const tipo = document.getElementById('selectTipoElementoPlan').value;
+            const wrapper = document.getElementById('wrapperSelectContenidoPlan');
+            const selectItem = document.getElementById('selectContenidoItemPlan');
+            
+            if(tipo === 'vacio' || tipo === 'fuera') {
+                wrapper.style.display = 'none';
+            } else {
+                wrapper.style.display = 'block';
+                selectItem.innerHTML = '';
+                
+                if(tipo === 'cocina') {
+                    window.baseDatosComidas.forEach((c, idx) => {
+                        selectItem.innerHTML += `<option value="${idx}">${c.nombre}</option>`;
+                    });
+                } else if(tipo === 'pedido') {
+                    window.baseDatosPedidos.forEach((p, idx) => {
+                        selectItem.innerHTML += `<option value="${idx}">${p.nombre}</option>`;
+                    });
+                }
+            }
+        }
+
+        function ejecutarAsignarPlan() {
+            const tipo = document.getElementById('selectTipoElementoPlan').value;
+            if(tipo === 'vacio') {
+                delete window.baseDatosPlanSemanal[diaSeleccionadoParaPlan];
+            } else if(tipo === 'fuera') {
+                window.baseDatosPlanSemanal[diaSeleccionadoParaPlan] = {
+                    tipo: 'fuera',
+                    nombre: 'Comer fuera de casa 🚗🎉',
+                    index: -1
+                };
+            } else {
+                const selectItem = document.getElementById('selectContenidoItemPlan');
+                const idx = selectItem.value;
+                const texto = selectItem.options[selectItem.selectedIndex].text;
+                
+                window.baseDatosPlanSemanal[diaSeleccionadoParaPlan] = {
+                    tipo: tipo,
+                    nombre: texto,
+                    index: parseInt(idx)
+                };
+            }
+            enviarEstadoAFirebase();
+            ocultarModalPlan();
+            renderizarPlanSemanal();
+        }
+
+        document.getElementById('modalAsignarPlan').addEventListener('click', (e) => { if(e.target.classList.contains('pantalla-modal')) ocultarModalPlan(); });
+        function ocultarModalPlan() { document.getElementById('modalAsignarPlan').style.display = 'none'; }
+
+        function renderizarCompra() {
+            const contenedorResultados = document.getElementById('listaCompraResultados');
+            if(!contenedorResultados) return;
+            contenedorResultados.innerHTML = '';
+
+            let compraFiltrada = window.baseDatosCompra.filter(item => {
+                if(filtroSuperSeleccionado === 'todos') return true;
+                return item.super === filtroSuperSeleccionado;
+            });
+
+            if(compraFiltrada.length === 0) {
+                contenedorResultados.innerHTML = '<p style="font-size:13px; color:#A0908F; text-align:center;">Lista vacía.</p>';
+                return;
+            }
+
+            compraFiltrada.forEach(item => {
+                const indexOriginal = window.baseDatosCompra.indexOf(item);
+                const estaMarcadoParaBorrar = listaElementosMarcadosParaBorrar.includes(indexOriginal);
+                
+                const card = document.createElement('div');
+                card.className = `tarjeta-plato compra-estilo ${estaMarcadoParaBorrar ? 'marcado-borrar' : ''}`;
+                card.onclick = () => alternarMarcadoMasivoBorradoCompra(indexOriginal);
+
+                card.innerHTML = `
+                    <div class="check-compra-container">
+                        <i class="${estaMarcadoParaBorrar ? 'fas fa-check-circle' : 'far fa-circle'}"></i>
+                    </div>
+                    <div class="info-plato" style="margin-left: 12px;">
+                        <span class="nombre-plato" style="${estaMarcadoParaBorrar ? 'text-decoration: line-through; color: #888;' : ''}">${item.nombre}</span>
+                    </div>
+                    <span style="font-size:10px; font-weight:700; text-transform:uppercase;">🛒 ${item.super}</span>
+                `;
+                contenedorResultados.appendChild(card);
+            });
+        }
+
+        function filtrarSupercompra(supermercado) {
+            filtroSuperSeleccionado = supermercado;
+            document.querySelectorAll('.btn-filtro-super').forEach(b => b.classList.remove('activo'));
+            const botonActivo = document.getElementById('f-' + supermercado);
+            if(botonActivo) botonActivo.classList.add('activo');
+            renderizarCompra();
+        }
+
+        function alternarMarcadoMasivoBorradoCompra(index) {
+            let pos = listaElementosMarcadosParaBorrar.indexOf(index);
+            if(pos > -1) listaElementosMarcadosParaBorrar.splice(pos, 1);
+            else listaElementosMarcadosParaBorrar.push(index);
+            comprobarVisibilidadBotonesCompra();
+            renderizarCompra();
+        }
+
+        function ejecutarBorradoMasivoCompra() {
+            listaElementosMarcadosParaBorrar.sort((x, y) => y - x);
+            listaElementosMarcadosParaBorrar.forEach(idx => {
+                window.baseDatosCompra.splice(idx, 1);
+            });
+            listaElementosMarcadosParaBorrar = [];
+            enviarEstadoAFirebase();
+            comprobarVisibilidadBotonesCompra();
+            renderizarCompra();
+        }
+
+        function iniciarTemporizadorGestion(elemento, index, tipo, e) {
+            elementoSeleccionadoParaGestionar = elemento;
+            indiceSeleccionadoParaGestionar = index;
+            window.tipoGestionActual = tipo;
+            temporizadorPulsacionLarga = setTimeout(() => {
+                mostrarModalGestionar();
+            }, 700); 
+        }
+
+        function cancelarTemporizadorGestion() {
+            if(temporizadorPulsacionLarga) clearTimeout(temporizadorPulsacionLarga);
+        }
+
+        function mostrarModalGestionar() {
+            document.getElementById('tituloGestionar').innerText = `Gestión: "${elementoSeleccionadoParaGestionar.nombre}"`;
+            document.getElementById('modalGestionar').style.display = 'flex';
+        }
+
+        document.getElementById('modalGestionar').addEventListener('click', (e) => { if(e.target.classList.contains('pantalla-modal')) ocultarModalGestionar(); });
+        function ocultarModalGestionar() { document.getElementById('modalGestionar').style.display = 'none'; }
+
+        function ejecutarOpcionEliminacion() {
+            if(confirm('¿Seguro que deseas eliminar este registro?')) {
+                if(window.tipoGestionActual === 'cocina') window.baseDatosComidas.splice(indiceSeleccionadoParaGestionar, 1);
+                if(window.tipoGestionActual === 'pedidos') window.baseDatosPedidos.splice(indiceSeleccionadoParaGestionar, 1);
+                enviarEstadoAFirebase();
+                ocultarModalGestionar();
+                actualizarInterfazCompleta();
+            }
+        }
+
+        function ejecutarOpcionEdicion() {
+            ocultarModalGestionar();
+            window.modoEdicionActivo = true;
+            
+            if(window.tipoGestionActual === 'cocina') {
+                let comida = window.baseDatosComidas[indiceSeleccionadoParaGestionar];
+                document.getElementById('modalPlatoTituloAccion').innerText = "Editar Plato";
+                document.getElementById('addPlatoNombre').value = comida.nombre;
+                document.getElementById('addPlatoTiempo').value = comida.tiempo || 30;
+                document.getElementById('rangeTiempoValor').innerText = (comida.tiempo || 30) + ' min';
+                document.getElementById('addPlatoIngredientes').value = comida.ingredientes || '';
+                document.getElementById('addPlatoDetalles').value = comida.detalles || '';
+                
+                mapaGustosModalEdicion = cLonarObjeto(comida.gustos || {});
+                pintarSelectorGustosModal('cocina');
+                mostrarModal();
+            } else if(window.tipoGestionActual === 'pedidos') {
+                let pedido = window.baseDatosPedidos[indiceSeleccionadoParaGestionar];
+                document.getElementById('modalPedidoTituloAccion').innerText = "Editar Sitio";
+                document.getElementById('addPedidoNombre').value = pedido.nombre;
+                document.getElementById('addPedidoTipo').value = pedido.tipo || '';
+                mostrarModalPedido();
+            }
+        }
+
+        function cLonarObjeto(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+        function pintarSelectorGustosModal(tipo) {
+            if(tipo !== 'cocina') return;
+            const contenedor = document.getElementById('gustosPlatoContenedor');
+            contenedor.innerHTML = '';
+            
+            INTEGRANTES.forEach(p => {
+                const estadoGusto = mapaGustosModalEdicion[p.id] || 0; 
+                let textGusto = "Neutro 😐";
+                let claseBtn = "";
+                if(estadoGusto === 1) { textGusto = "Le gusta 😊"; claseBtn = "le-gusta"; }
+                if(estadoGusto === -1) { textGusto = "No gusta 🤢"; claseBtn = "no-le-gusta"; }
+                
+                contenedor.innerHTML += `
+                    <div class="btn-gusto-toggle ${claseBtn}" onclick="rotarGustoFamiliarModal('${p.id}', '${tipo}')">
+                        <span class="mini-avatar">${p.emoji}</span>
+                        <span style="font-size:9px; margin-top:2px;">${p.nombre}</span>
+                        <span style="font-size:8px; font-weight:bold; margin-top:2px;">${textGusto}</span>
+                    </div>
+                `;
+            });
+        }
+
+        function rotarGustoFamiliarModal(perfilId, tipo) {
+            const actual = mapaGustosModalEdicion[perfilId] || 0;
+            let nuevo = 0;
+            if(actual === 0) nuevo = 1;      
+            else if(actual === 1) nuevo = -1; 
+            else if(actual === -1) nuevo = 0; 
+            
+            mapaGustosModalEdicion[perfilId] = nuevo;
+            pintarSelectorGustosModal(tipo);
+        }
+
+        function mostrarModal() { 
+            if(!window.modoEdicionActivo) {
+                document.getElementById('modalPlatoTituloAccion').innerText = "Añadir a Cocina";
+                mapaGustosModalEdicion = {};
+                pintarSelectorGustosModal('cocina');
+            }
+            document.getElementById('modalAgregarPlato').style.display = 'flex'; 
+        }
+        document.getElementById('modalAgregarPlato').addEventListener('click', (e) => { if(e.target.classList.contains('pantalla-modal')) ocultarModal(); });
+        function ocultarModal() { 
+            document.getElementById('modalAgregarPlato').style.display = 'none';
+            window.modoEdicionActivo = false;
+            document.getElementById('addPlatoNombre').value = '';
+            document.getElementById('addPlatoIngredientes').value = '';
+            document.getElementById('addPlatoDetalles').value = '';
+        }
+        
+        function ejecutarAgregarPlato() {
+            const nombre = document.getElementById('addPlatoNombre').value;
+            const tiempo = parseInt(document.getElementById('addPlatoTiempo').value) || 30;
+            const ing = document.getElementById('addPlatoIngredientes').value || 'Varios';
+            const det = document.getElementById('addPlatoDetalles').value || '';
+            
+            if(nombre.trim() !== '') {
+                if (window.modoEdicionActivo) {
+                    let comida = window.baseDatosComidas[indiceSeleccionadoParaGestionar];
+                    comida.nombre = nombre;
+                    comida.tiempo = tiempo;
+                    comida.ingredientes = ing;
+                    comida.detalles = det;
+                    comida.gustos = cLonarObjeto(mapaGustosModalEdicion);
+                } else {
+                    window.baseDatosComidas.push({ 
+                        nombre, tiempo, ingredientes: ing, detalles: det, 
+                        gustos: cLonarObjeto(mapaGustosModalEdicion) 
+                    });
+                }
+                enviarEstadoAFirebase();
+                ocultarModal();
+                renderizarCocina();
+            }
+        }
+
+        function mostrarModalPedido() { 
+            if(!window.modoEdicionActivo) {
+                document.getElementById('modalPedidoTituloAccion').innerText = "Añadir Sitio";
+            }
+            document.getElementById('modalAgregarPedido').style.display = 'flex'; 
+        }
+        document.getElementById('modalAgregarPedido').addEventListener('click', (e) => { if(e.target.classList.contains('pantalla-modal')) ocultarModalPedido(); });
+        function ocultarModalPedido() { 
+            document.getElementById('modalAgregarPedido').style.display = 'none'; 
+            window.modoEdicionActivo = false;
+            document.getElementById('addPedidoNombre').value = '';
+            document.getElementById('addPedidoTipo').value = '';
+        }
+        
+        function ejecutarAgregarPedido() {
+            const nombre = document.getElementById('addPedidoNombre').value;
+            const tipo = document.getElementById('addPedidoTipo').value || 'Varios';
+            if(nombre.trim() !== '') {
+                if(window.modoEdicionActivo) {
+                    let pedido = window.baseDatosPedidos[indiceSeleccionadoParaGestionar];
+                    pedido.nombre = nombre;
+                    pedido.tipo = tipo;
+                } else {
+                    window.baseDatosPedidos.push({ nombre, tipo, votos: [perfilLogueadoActual] });
+                }
+                enviarEstadoAFirebase();
+                ocultarModalPedido();
+                renderizarPedidos();
+            }
+        }
+
+        function mostrarModalCompra() { document.getElementById('modalAgregarCompra').style.display = 'flex'; }
+        function ocultarModalCompra() { document.getElementById('modalAgregarCompra').style.display = 'none'; }
+        
+        function ejecutarAgregarCompra() {
+            const nombre = document.getElementById('addCompraNombre').value;
+            const sup = document.getElementById('addCompraSuper').value;
+            
+            if(nombre.trim() !== '') {
+                window.baseDatosCompra.push({ nombre, super: sup });
+                enviarEstadoAFirebase();
+                ocultarModalCompra();
+                document.getElementById('addCompraNombre').value = '';
+                renderizarCompra();
+            }
+        }
+    </script>
+</body>
+</html>
